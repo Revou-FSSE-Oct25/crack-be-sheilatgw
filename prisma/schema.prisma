@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  admin_id   Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  name       String
+  created_at DateTime @default(now())
+}
+
+model User {
+  email     String    @unique
+  birthDate DateTime
+  createdAt DateTime  @default(now())
+  fullName  String
+  password  String
+  updatedAt DateTime  @updatedAt
+  username  String    @unique
+  user_id   Int       @id @default(autoincrement())
+  addresses Address[]
+  cart      Cart[]
+  orders    Order[]
+}
+
+model Product {
+  name           String
+  price          Decimal
+  stock          Int
+  orderType      OrderType
+  preStatus      POStatus?
+  poDeadline     DateTime?
+  isSoldOut      Boolean      @default(false)
+  imageUrl       String
+  slug           String       @unique
+  categoryId     Int
+  characterId    Int
+  seriesId       Int
+  manufacturerId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  product_id     Int          @id @default(autoincrement())
+  cart           Cart[]
+  orderItems     OrderItem[]
+  category       Category     @relation(fields: [categoryId], references: [category_id])
+  character      Character    @relation(fields: [characterId], references: [chara_id])
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [manuf_id])
+  series         Series       @relation(fields: [seriesId], references: [series_id])
+}
+
+model Category {
+  name        String
+  slug        String     @unique
+  parentId    Int?
+  category_id Int        @id @default(autoincrement())
+  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [category_id])
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+
+  @@unique([name, parentId])
+}
+
+model Order {
+  order_id        Int            @id @default(autoincrement())
+  userId          Int
+  addressId       Int
+  recipientName   String
+  phoneNumber     String
+  fullAddress     String
+  province        String
+  cityRegency     String
+  postalCode      String
+  shippingMethod  ShippingMethod
+  courier         String
+  shippingService String
+  paymentMethod   PaymentMethod
+  subtotalPrice   Int
+  shippingCost    Int
+  totalPrice      Int
+  status          OrderStatus    @default(PENDING_PAYMENT)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  user            User           @relation(fields: [userId], references: [user_id])
+  address         Address        @relation(fields: [addressId], references: [address_id])
+  items           OrderItem[]
+}
+
+model OrderItem {
+  orderId       Int
+  productId     Int
+  quantity      Int
+  priceSnapshot Int
+  orderItem_id  Int     @id @default(autoincrement())
+  order         Order   @relation(fields: [orderId], references: [order_id])
+  product       Product @relation(fields: [productId], references: [product_id])
+}
+
+model Address {
+  address_id    Int      @id @default(autoincrement())
+  userId        Int
+  recipientName String
+  phoneNumber   String
+  fullAddress   String
+  province      String
+  cityRegency   String
+  postalCode    String
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [user_id])
+  orders        Order[]
+}
+
+model Cart {
+  userId    Int
+  productId Int
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cart_id   Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [product_id])
+  user      User     @relation(fields: [userId], references: [user_id])
+
+  @@unique([userId, productId])
+}
+
+model Character {
+  name     String    @unique
+  slug     String    @unique
+  chara_id Int       @id @default(autoincrement())
+  products Product[]
+}
+
+model Series {
+  name      String    @unique
+  slug      String    @unique
+  series_id Int       @id @default(autoincrement())
+  products  Product[]
+}
+
+model Manufacturer {
+  name     String    @unique
+  slug     String    @unique
+  manuf_id Int       @id @default(autoincrement())
+  products Product[]
+}
+
+enum OrderType {
+  READY_STOCK
+  PO
+}
+
+enum POStatus {
+  NORMAL
+  LATE
+  CLOSED
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  PROCESSING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum ShippingMethod {
+  REGULAR
+  NEXT_DAY
+  SAME_DAY
+}
+
+enum PaymentMethod {
+  TRANSFER
+  E_WALLET
+  QRIS
+}
