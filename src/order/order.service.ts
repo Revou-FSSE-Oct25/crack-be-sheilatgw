@@ -116,6 +116,8 @@ export class OrderService {
             price: number;
             fullPrice: number;
             discount?: number;
+            productName: string;
+            imageUrl?: string;
         }[] = [];
 
         for(const item of cartItems){
@@ -147,7 +149,9 @@ export class OrderService {
                     productId: item.productId,
                     quantity: qty,
                     price,
-                    fullPrice: price
+                    fullPrice: price,
+                    productName: item.product.name,
+                    imageUrl: item.product.imageUrl,
                 });
 
                 continue;
@@ -172,7 +176,9 @@ export class OrderService {
                     productId: item.productId,
                     quantity: qty,
                     price: dp,
-                    fullPrice: price
+                    fullPrice: price,
+                    productName: item.product.name,
+                    imageUrl: item.product.imageUrl,
                 });
             }
 
@@ -188,7 +194,9 @@ export class OrderService {
                     quantity: qty,
                     price: finalPrice,
                     fullPrice: price,
-                    discount
+                    discount,
+                    productName: item.product.name,
+                    imageUrl: item.product.imageUrl,
                 });
             }
         }

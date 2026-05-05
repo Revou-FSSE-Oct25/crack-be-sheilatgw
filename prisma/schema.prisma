@@ -99,10 +99,14 @@ model OrderItem {
   quantity      Int
   price         Int      
   fullPrice     Int      
-  discount      Int?     
+  discount      Int?  
+  productName   String
+  imageUrl      String?
   orderItem_id  Int     @id @default(autoincrement())
   order         Order   @relation(fields: [orderId], references: [order_id])
   product       Product @relation(fields: [productId], references: [product_id])
+
+  @@unique([orderId, productId])
 }
 
 model Address {
