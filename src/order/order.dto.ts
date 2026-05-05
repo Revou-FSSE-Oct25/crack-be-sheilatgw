@@ -1,6 +1,8 @@
-import { IsInt, IsEnum, IsString, IsNotEmpty} from "class-validator";
+import { IsInt, IsEnum, IsString, IsNotEmpty, IsArray, ValidateNested} from "class-validator";
 import { ShippingMethod, PaymentMethod } from "src/generated/prisma/enums";
 import { Type } from "class-transformer";
+import { CheckoutItemDto } from "./checkout.dto";
+
 
 export class OrderDto{
     @Type(() => Number)
@@ -21,4 +23,9 @@ export class OrderDto{
     @IsEnum(PaymentMethod)
     @IsNotEmpty()
     paymentMethod!: PaymentMethod
+
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => CheckoutItemDto)
+    items!: CheckoutItemDto[];
 }

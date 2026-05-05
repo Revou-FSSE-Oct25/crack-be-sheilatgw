@@ -44,4 +44,10 @@ export class OrderController {
     cancel(@Param('id', ParseIntPipe) id: number, @Req() req){
         return this.orderService.cancel(id, req.user.id)
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':id/pay-remaining')
+    payRemaining(@Param('id', ParseIntPipe) id: number, @Req() req){
+        return this.orderService.payRemaining(id, req.user.user_id);
+    }
 }

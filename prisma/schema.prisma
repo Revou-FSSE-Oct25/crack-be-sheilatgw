@@ -83,6 +83,8 @@ model Order {
   subtotalPrice   Int
   shippingCost    Int
   totalPrice      Int
+  remainingAmount Int
+  totalDiscount   Int?
   status          OrderStatus    @default(PENDING_PAYMENT)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
@@ -95,7 +97,9 @@ model OrderItem {
   orderId       Int
   productId     Int
   quantity      Int
-  priceSnapshot Int
+  price         Int      
+  fullPrice     Int      
+  discount      Int?     
   orderItem_id  Int     @id @default(autoincrement())
   order         Order   @relation(fields: [orderId], references: [order_id])
   product       Product @relation(fields: [productId], references: [product_id])
@@ -127,6 +131,7 @@ model Cart {
   product   Product  @relation(fields: [productId], references: [product_id])
   user      User     @relation(fields: [userId], references: [user_id])
 
+  @@index([userId])
   @@unique([userId, productId])
 }
 
