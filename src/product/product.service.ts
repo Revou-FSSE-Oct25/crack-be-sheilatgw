@@ -58,26 +58,29 @@ export class ProductService {
         })
     }
 
-    async update(id: number, dto: UpdateProductDto){
-        await this.findOne(id)
+    async update(id: number, dto: UpdateProductDto) {
+        await this.findOne(id);
+
+        const slug = dto.name ? dto.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-') : undefined;
 
         return this.prisma.product.update({
-            where: {product_id: id},
-            data:{
-                name: dto.name,
-                price: dto.price ?? undefined,
-                stock: dto.stock,
-                orderType: dto.orderType,
-                preStatus: dto.preStatus,
-                poDeadline: dto.poDeadline,
-                isSoldOut: dto.isSoldOut,
-                imageUrl: dto.imageUrl,
-                categoryId: dto.categoryId,
-                characterId: dto.characterId,
-                seriesId: dto.seriesId,
-                manufacturerId: dto.manufacturerId,
-            }
-        })
+            where: { product_id: id },
+            data: {
+            name: dto.name,
+            slug,
+            price: dto.price,
+            stock: dto.stock,
+            orderType: dto.orderType,
+            preStatus: dto.preStatus,
+            poDeadline: dto.poDeadline,
+            isSoldOut: dto.isSoldOut,
+            imageUrl: dto.imageUrl,
+            categoryId: dto.categoryId,
+            characterId: dto.characterId,
+            seriesId: dto.seriesId,
+            manufacturerId: dto.manufacturerId,
+            },
+        });
     }
 
     async remove(id:number){
