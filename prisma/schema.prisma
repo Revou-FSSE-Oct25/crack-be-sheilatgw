@@ -32,6 +32,7 @@ model User {
 model Product {
   name           String
   price          Decimal
+  description    String
   stock          Int
   orderType      OrderType
   preStatus      POStatus?

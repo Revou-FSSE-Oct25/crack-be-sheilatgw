@@ -8,6 +8,9 @@ export class CreateProductDto{
     @IsNumber()
     price!: number
 
+    @IsString()
+    description!: string
+
     @IsNumber()
     stock!: number
 

@@ -43,6 +43,7 @@ export class ProductService {
             data: {
                 name: dto.name,
                 slug,
+                description: dto.description,
                 price: dto.price,
                 stock: dto.stock,
                 orderType: dto.orderType,
@@ -68,6 +69,7 @@ export class ProductService {
             data: {
             name: dto.name,
             slug,
+            description: dto.description,
             price: dto.price,
             stock: dto.stock,
             orderType: dto.orderType,
