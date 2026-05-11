@@ -37,6 +37,8 @@ model Product {
   orderType      OrderType
   preStatus      POStatus?
   poDeadline     DateTime?
+  poReleaseMonth String?
+  poEstimatedMonth  String?
   isSoldOut      Boolean      @default(false)
   imageUrl       String
   slug           String       @unique

@@ -25,6 +25,10 @@ export class CreateProductDto{
     @IsDateString()
     poDeadline?: string
 
+    @IsOptional()
+    @IsString()
+    poReleaseMonth?: string
+   
     @IsBoolean()
     isSoldOut!: boolean
 
