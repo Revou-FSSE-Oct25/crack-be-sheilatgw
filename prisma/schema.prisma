@@ -33,7 +33,7 @@ model Product {
   name           String
   price          Decimal
   description    String
-  stock          Int
+  stock          Int?
   orderType      OrderType
   preStatus      POStatus?
   poDeadline     DateTime?

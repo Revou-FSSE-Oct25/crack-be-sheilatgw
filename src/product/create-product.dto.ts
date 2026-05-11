@@ -11,8 +11,9 @@ export class CreateProductDto{
     @IsString()
     description!: string
 
+    @IsOptional()
     @IsNumber()
-    stock!: number
+    stock?: number
 
     @IsEnum(OrderType)
     orderType!: OrderType

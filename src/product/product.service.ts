@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma } from 'src/generated/prisma/client';
 import { CreateProductDto } from './create-product.dto';
@@ -61,6 +61,11 @@ export class ProductService {
     }
 
     async create(dto: CreateProductDto){
+        if (dto.orderType === 'READY_STOCK' && dto.stock == null) {
+        throw new BadRequestException(
+            'Stock is required for ready stock products',
+        )
+        }
         const poEstimatedMonth = generatePoEstimatedMonth(dto.poReleaseMonth)
         const slug = dto.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
 
