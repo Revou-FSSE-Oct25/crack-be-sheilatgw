@@ -1,63 +1,100 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
-import { Prisma } from 'src/generated/prisma/client';
 import { CreateProductDto } from './create-product.dto';
 import { UpdateProductDto } from './update-product.dto';
+import { getMinimumDP, getFullPaymentDiscount } from 'src/common/utils/payment.util';
 
 function generatePoEstimatedMonth(poReleaseMonth?: string) {
   if (!poReleaseMonth) return undefined
 
   const releaseDate = new Date(`${poReleaseMonth} 1`)
 
+  if (isNaN(releaseDate.getTime())) return undefined
+
   const firstEstimate = new Date(releaseDate)
-  firstEstimate.setMonth(releaseDate.getMonth() + 1)
+    firstEstimate.setMonth(firstEstimate.getMonth() + 1)
 
-  const secondEstimate = new Date(releaseDate)
-  secondEstimate.setMonth(releaseDate.getMonth() + 2)
+    const secondEstimate = new Date(releaseDate)
+    secondEstimate.setMonth(secondEstimate.getMonth() + 2)
 
-  const firstMonth = firstEstimate.toLocaleDateString("en-US", {
-    month: "long",
-  })
+    const firstMonth = firstEstimate.toLocaleDateString("en-US", {
+        month: "long",
+    })
 
-  const secondMonth = secondEstimate.toLocaleDateString("en-US", {
-    month: "long",
-  })
+    const secondMonth = secondEstimate.toLocaleDateString("en-US", {
+        month: "long",
+    })
 
-  const year = secondEstimate.getFullYear()
+    const year = secondEstimate.getFullYear()
 
-  return `${firstMonth}-${secondMonth} ${year}`
-}
+    return `${firstMonth}-${secondMonth} ${year}`
+    }
 
 @Injectable()
 export class ProductService {
     constructor(private prisma: PrismaService) {}
 
-    async findAll(){
-        return this.prisma.product.findMany({
+    async findAll() {
+        const products = await this.prisma.product.findMany({
             include: {
-                category: true,
-                character: true,
-                manufacturer: true,
-                series: true,
+            category: true,
+            character: true,
+            manufacturer: true,
+            series: true,
+            },
+        })
+
+        return products.map((product) => {
+            const price = Number(product.price)
+            const isPO = product.orderType === 'PO'
+
+            const fullPaymentDiscount = isPO
+            ? getFullPaymentDiscount(price)
+            : null
+
+            return {
+            ...product,
+            minimumDP: isPO ? getMinimumDP(price) : null,
+            fullPaymentDiscount,
+            fullPaymentPrice:
+                isPO && fullPaymentDiscount !== null
+                ? price - fullPaymentDiscount
+                : null,
             }
         })
     }
 
-    async findOne(id: number){
-        const product = await this.prisma.product.findUnique({where: {product_id: id},
+    async findOne(id: number) {
+        const product = await this.prisma.product.findUnique({
+            where: { product_id: id },
             include: {
-                category: true,
-                character: true,
-                manufacturer: true,
-                series: true,
-            }
+            category: true,
+            character: true,
+            manufacturer: true,
+            series: true,
+            },
         })
 
-        if(!product){
-            throw new NotFoundException("Product not found")
+        if (!product) {
+            throw new NotFoundException('Product not found')
         }
 
-        return product
+        const price = Number(product.price)
+        const isPO = product.orderType === 'PO'
+
+        const fullPaymentDiscount = isPO
+            ? getFullPaymentDiscount(price)
+            : null
+
+        return {
+            ...product,
+            minimumDP: isPO ? getMinimumDP(price) : null,
+            fullPaymentDiscount,
+            fullPaymentPrice:
+            isPO && fullPaymentDiscount !== null
+                ? price - fullPaymentDiscount
+                : null,
+        }
     }
 
     async create(dto: CreateProductDto){
@@ -75,10 +112,10 @@ export class ProductService {
                 slug,
                 description: dto.description,
                 price: dto.price,
-                stock: dto.stock,
+                ...(dto.stock !== undefined && { stock: dto.stock }),
                 orderType: dto.orderType,
                 preStatus: dto.preStatus,
-                poDeadline: dto.poDeadline,
+                poDeadline: dto.poDeadline ? new Date(dto.poDeadline) : null,
                 isSoldOut: dto.isSoldOut ?? false,
                 poReleaseMonth: dto.poReleaseMonth,
                 poEstimatedMonth,

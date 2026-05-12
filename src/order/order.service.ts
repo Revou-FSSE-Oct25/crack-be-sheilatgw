@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma.service';
 import { OrderDto } from './order.dto';
 import { shippingConfig } from './shipping.config';
 import { OrderStatus } from 'src/generated/prisma/enums';
+import { getMinimumDP, getFullPaymentDiscount, } from 'src/common/utils/payment.util';
 
 @Injectable()
 export class OrderService {
@@ -93,19 +94,6 @@ export class OrderService {
             throw new BadRequestException("Some cart items are invalid");
         }
 
-        const getMinimumDP = (price: number) => {
-            if (price <= 200_000) return 50_000;
-            if (price <= 700_000) return 100_000;
-            if (price <= 1_000_000) return 200_000;
-            if (price <= 2_000_000) return 800_000;
-            if (price <= 3_000_000) return 1_500_000;
-            return 2_000_000
-        };
-
-        const getDiscount = (price: number) => {
-            return Math.min(price * 0.05, 50_000);
-        };
-
         let subtotal = 0;
         let fullTotal = 0;
         let totalDiscount = 0;
@@ -125,7 +113,8 @@ export class OrderService {
             const qty = item.quantity;
 
             if (item.product.orderType === "READY_STOCK") {
-                if (qty > item.product.stock) {
+                const stock = item.product.stock ?? 0
+                if (qty > stock) {
                     throw new BadRequestException(`Stock for ${item.product.name} is not enough`);
                 }
             }
@@ -139,7 +128,7 @@ export class OrderService {
             fullTotal += price * qty;
 
             if(item.product.orderType === "READY_STOCK"){
-                if(selected.dpAmount !== undefined){
+                if(item.dpAmount !== null && item.dpAmount !== undefined){
                     throw new BadRequestException("Ready stock must be full payment");
                 }
 
@@ -157,9 +146,9 @@ export class OrderService {
                 continue;
             }
 
-            const dp = selected.dpAmount;
+            const dp = item.dpAmount;
 
-            if(dp !== undefined){
+            if(dp !== null && dp !== undefined){
                 const minDP = getMinimumDP(price);
 
                 if(dp < minDP){
@@ -183,7 +172,7 @@ export class OrderService {
             }
 
             else{
-                const discount = getDiscount(price);
+                const discount = getFullPaymentDiscount(price);
                 const finalPrice = price - discount;
 
                 subtotal += finalPrice * qty;

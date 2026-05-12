@@ -132,6 +132,7 @@ model Cart {
   userId    Int
   productId Int
   quantity  Int
+  dpAmount  Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   cart_id   Int      @id @default(autoincrement())

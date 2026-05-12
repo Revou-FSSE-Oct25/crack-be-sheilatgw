@@ -1,4 +1,4 @@
-import { IsInt, Min } from "class-validator";
+import { IsInt, Min, IsOptional } from "class-validator";
 import { Type } from "class-transformer";
 
 export class AddToCartDto{
@@ -10,4 +10,9 @@ export class AddToCartDto{
     @IsInt()
     @Min(1)
     quantity!: number
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    dpAmount?: number
 }

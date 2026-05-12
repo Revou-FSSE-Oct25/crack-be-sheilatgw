@@ -25,7 +25,12 @@ export class CharacterService {
     });
   }
 
-  create(data: { name: string; slug: string }) {
-    return this.prisma.character.create({ data });
+  create(data: { name: string }) {
+    const slug = data.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
+    return this.prisma.character.create({ 
+      data: {
+        name: data.name,
+       slug,
+      } });
   }
 }

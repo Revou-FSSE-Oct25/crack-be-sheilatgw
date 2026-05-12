@@ -19,7 +19,7 @@ export class ManufacturerController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Post()
-  create(@Body() body: { name: string; slug: string }) {
+  create(@Body() body: { name: string }) {
     return this.manufacturerService.create(body);
   }
 }

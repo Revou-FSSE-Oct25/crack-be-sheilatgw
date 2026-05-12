@@ -27,9 +27,13 @@ export class ManufacturerService {
     });
   }
 
-  create(data: { name: string; slug: string }) {
+  create(data: { name: string }) {
+    const slug = data.name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-')
     return this.prisma.manufacturer.create({
-      data,
+      data: {
+        name: data.name,
+        slug
+      }
     });
   }
 }

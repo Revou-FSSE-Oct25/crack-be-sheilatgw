@@ -8,16 +8,18 @@ export class CartService {
     constructor(private prisma: PrismaService){}
 
     async findAll(userId: number) {
-        const items = await this.prisma.cart.findMany({where: { userId },
-            include: {
-                product: true,
-            },
-        });
+        const items = await this.prisma.cart.findMany({
+            where: { userId },
+            include: { product: true, },
+        })
 
         const subtotal = items.reduce((total, item) => {
-            return total + Number(item.product.price) * item.quantity}, 0);
+        const price = item.dpAmount ?? Number(item.product.price)
 
-        return {items, subtotal,};
+        return total + price * item.quantity
+        }, 0)
+
+        return { items, subtotal }
     }
 
     async add(dto: AddToCartDto, userId: number) {
@@ -27,7 +29,9 @@ export class CartService {
             throw new NotFoundException("Product not found");
         }
 
-        if ( product.orderType === "READY_STOCK" && dto.quantity > product.stock) {
+        const stock = product.stock ?? 0
+
+        if (product.orderType === "READY_STOCK" && dto.quantity > stock) {
             throw new BadRequestException("Stock not enough");
         }
 
@@ -42,17 +46,18 @@ export class CartService {
 
         if (existing) {
             const newQty = existing.quantity + dto.quantity;
+            const stock = product.stock ?? 0
 
-            if (
-            product.orderType === "READY_STOCK" &&
-            newQty > product.stock
-            ) {
+            if (product.orderType === "READY_STOCK" && newQty > stock) {
             throw new BadRequestException("Stock not enough");
             }
 
             return this.prisma.cart.update({
             where: { cart_id: existing.cart_id },
-            data: { quantity: newQty },
+            data: {
+                quantity: newQty,
+                dpAmount: dto.dpAmount,
+            },
             });
         }
 
@@ -61,6 +66,7 @@ export class CartService {
             userId,
             productId: dto.productId,
             quantity: dto.quantity,
+            dpAmount: dto.dpAmount,
             },
         });
     }
@@ -81,10 +87,9 @@ export class CartService {
             });
         }
 
-        if (
-            cart.product.orderType === "READY_STOCK" &&
-            dto.quantity > cart.product.stock
-        ) {
+        const stock = cart.product.stock ?? 0
+
+        if (cart.product.orderType === "READY_STOCK" && dto.quantity > stock) {
             throw new BadRequestException("Stock not enough");
         }
 
