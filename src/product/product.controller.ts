@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Body, Patch, ParseIntPipe, UseGuards} from '@nestjs/common';
+import { Controller, Get, Delete, Param, Post, Body, Query, Patch, ParseIntPipe, UseGuards} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
 import { RolesGuard } from 'src/auth/roles.guard';
@@ -10,8 +10,8 @@ export class ProductController {
     constructor(private productService: ProductService){}
 
     @Get()
-    async getAll(){
-        return this.productService.findAll()
+    async getAll(@Query("search") search?: string) {
+        return this.productService.findAll(search)
     }
 
     @Get(':id')
@@ -29,5 +29,11 @@ export class ProductController {
     @Patch(':id')
     async updateProduct(@Param('id', ParseIntPipe) id: number, @Body() edit: UpdateProductDto){
         return this.productService.update(id, edit)
+    }
+
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Delete(':id')
+    async deleteProduct(@Param('id', ParseIntPipe) id: number,){
+        return this.productService.remove(id)
     }
 }

@@ -34,8 +34,17 @@ function generatePoEstimatedMonth(poReleaseMonth?: string) {
 export class ProductService {
     constructor(private prisma: PrismaService) {}
 
-    async findAll() {
+    async findAll(search?: string) {
         const products = await this.prisma.product.findMany({
+            where: search
+            ? {
+                name: {
+                    contains: search,
+                    mode: "insensitive",
+                },
+                }
+            : undefined,
+
             include: {
             category: true,
             character: true,
@@ -46,7 +55,7 @@ export class ProductService {
 
         return products.map((product) => {
             const price = Number(product.price)
-            const isPO = product.orderType === 'PO'
+            const isPO = product.orderType === "PO"
 
             const fullPaymentDiscount = isPO
             ? getFullPaymentDiscount(price)
@@ -144,7 +153,7 @@ export class ProductService {
             stock: dto.stock,
             orderType: dto.orderType,
             preStatus: dto.preStatus,
-            poDeadline: dto.poDeadline,
+            poDeadline: dto.poDeadline ? new Date(dto.poDeadline) : undefined,
             poReleaseMonth: dto.poReleaseMonth,
             poEstimatedMonth,
             isSoldOut: dto.isSoldOut,

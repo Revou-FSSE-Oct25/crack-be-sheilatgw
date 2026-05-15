@@ -3,6 +3,7 @@ export function getMinimumDP(price: number) {
     { max: 200_000, dp: 50_000 },
     { max: 700_000, dp: 100_000 },
     { max: 1_000_000, dp: 200_000 },
+    { max: 1_500_000, dp: 300_000 },
     { max: 2_000_000, dp: 800_000 },
     { max: 3_000_000, dp: 1_500_000 },
   ]

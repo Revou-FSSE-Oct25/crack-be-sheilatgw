@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminDto } from './admin.dto';
 import { UpdateAdminDto } from './updateAdmin.dto';
@@ -18,6 +18,12 @@ export class AdminController {
     @Get()
     findAll() {
         return this.adminService.findAll();
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('me')
+    me(@Req() req) {
+        return this.adminService.findOne(req.user.id)
     }
 
     @UseGuards(JwtAuthGuard, RolesGuard)

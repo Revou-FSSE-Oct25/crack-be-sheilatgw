@@ -95,8 +95,9 @@ export class OrderService {
         }
 
         let subtotal = 0;
-        let fullTotal = 0;
-        let totalDiscount = 0;
+let fullTotal = 0;
+let totalDiscount = 0;
+let remainingAmount = 0;
 
         const orderItemsData: {
             productId: number;
@@ -125,7 +126,7 @@ export class OrderService {
                 throw new BadRequestException("Missing item selection");
             }
 
-            fullTotal += price * qty;
+            
 
             if(item.product.orderType === "READY_STOCK"){
                 if(item.dpAmount !== null && item.dpAmount !== undefined){
@@ -160,6 +161,7 @@ export class OrderService {
                 }
 
                 subtotal += dp * qty;
+                remainingAmount += (price - dp) * qty;
 
                 orderItemsData.push({
                     productId: item.productId,
@@ -191,7 +193,6 @@ export class OrderService {
         }
 
         const totalPrice = subtotal + shippingCost;
-        const remainingAmount = fullTotal - subtotal;
 
         const order = await this.prisma.$transaction(async (tx) => {
 
